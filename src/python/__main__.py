@@ -1,8 +1,8 @@
 '''
 '''
 import logging
-import os
 import optparse
+import os
 import subprocess
 
 from foursquare.source_code_analysis.scala.scala_import_sorter import ScalaImportSorter
