@@ -4,6 +4,7 @@
 from __future__ import (nested_scopes, generators, division, absolute_import, with_statement,
                         print_function, unicode_literals)
 
+import functools
 
 class ScalaSymbolPath(object):
   """"A dotted path of identifiers."""
@@ -103,12 +104,23 @@ class ScalaImportClause(object):
       self.imports.append(imprt)
 
   def remove_import(self, name):
-    ret = (x for x in self.imports if x.get_name() == name).next()
-    self.imports = filter(lambda x: x.get_name() != name, self.imports)
+    ret = [ x for x in self.imports if x.get_name() == name ][0]
+    self.imports = [ x for x in self.imports if x.get_name() != name ]
     return ret
 
+  @staticmethod
+  def cmp(a, b):
+    a = a.path.path_string
+    b = b.path.path_string
+    if a > b:
+      return 1
+    elif a == b:
+      return 0
+    else:
+      return -1
+
   def sort_imports(self):
-    self.imports.sort(cmp=lambda x,y: cmp(x.path.path_string, y.path.path_string))
+    self.imports.sort(key=functools.cmp_to_key(ScalaImportClause.cmp))
 
   MAX_LINE_LEN = 120
 

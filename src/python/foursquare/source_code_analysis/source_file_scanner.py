@@ -29,10 +29,10 @@ class SourceFileScanner(object):
 
   def apply_to_source_file(self, file_path):
     if not file_path.endswith(self.ext):
-      log.debug('Skipping non-{0} file {1}'.format(self.ext, file_path))
+      log.info('Skipping non-{0} file {1}'.format(self.ext, file_path))
       return
     if not os.path.exists(file_path):
-      log.debug('Skipping non existing file {0}'.format(file_path))
+      log.info('Skipping non existing file {0}'.format(file_path))
       return
     log.debug('Opening file {0}'.format(file_path))
     with open(file_path, 'r') as infile:

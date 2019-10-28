@@ -4,6 +4,7 @@
 from __future__ import (nested_scopes, generators, division, absolute_import, with_statement,
                         print_function, unicode_literals)
 
+import functools
 
 from foursquare.source_code_analysis.exception import SourceCodeAnalysisException
 from foursquare.source_code_analysis.scala.scala_import_parser import ScalaImportParser
@@ -39,12 +40,21 @@ class ScalaImportSorter(ScalaSourceFileRewriter):
   _special_cases = { 'java': 'aaa0', 'javax': 'aaa1', 'scala': 'aaa2', 'scalax': 'aaa3' }
 
   @staticmethod
+  def cmp(a, b):
+    if a > b:
+      return 1
+    elif a == b:
+      return 0
+    else:
+      return -1
+
+  @staticmethod
   def cmp_clauses(left, right):
     def string_for_cmp(clause):
       # Sort alphabetically, except that we consider { to be less than any letter, so that
       # import foo.bar.Baz._ sorts after import foo.bar.{Bar1, Bar2}.
       return clause.str_no_indent().replace('{', ' ')
-    return cmp(string_for_cmp(left), string_for_cmp(right))
+    return ScalaImportSorter.cmp(string_for_cmp(left), string_for_cmp(right))
 
   @staticmethod
   def cmp_clauses_fancy(left, right):
@@ -54,7 +64,7 @@ class ScalaImportSorter(ScalaSourceFileRewriter):
     right_root = right.path.path_parts[0]
     left_sort_key = ScalaImportSorter._special_cases.get(left_root, '') + left_str
     right_sort_key = ScalaImportSorter._special_cases.get(right_root, '') + right_str
-    return cmp(left_sort_key, right_sort_key)
+    return ScalaImportSorter.cmp(left_sort_key, right_sort_key)
 
   def apply_to_rewrite_cursor(self, rewrite_cursor):
     # Search for the first import in the first import block.
@@ -82,7 +92,7 @@ class ScalaImportSorter(ScalaSourceFileRewriter):
       cmp = ScalaImportSorter.cmp_clauses_fancy
     else:
       cmp = ScalaImportSorter.cmp_clauses
-    sorted_clauses = sorted(clauses, cmp=cmp)
+    sorted_clauses = sorted(clauses, key=functools.cmp_to_key(cmp))
     merged_clauses = []
     current_clause = None
     for clause in sorted_clauses:

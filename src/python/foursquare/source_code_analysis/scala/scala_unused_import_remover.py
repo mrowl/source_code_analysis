@@ -81,8 +81,7 @@ class ScalaUnusedImportRemover(BaseUnusedImportRemover):
   def check_for_usage(self, import_clause):
     removed_import_names = []
     for scala_import in import_clause.imports:
-      if len(filter(lambda x: x.is_prefix_of(scala_import.path) is not None,
-                    ScalaUnusedImportRemover.excluded_paths)) == 0:
+      if len([ x for x in ScalaUnusedImportRemover.excluded_paths if x.is_prefix_of(scala_import.path) is not None ]) == 0:
         name = scala_import.get_name()
         if name[0].isupper():  # Only rewrite imports that appear to be of types, not functions or wildcards.
           # Search for any appearance not immediately preceeded or followed by alphanumeric or underscore
